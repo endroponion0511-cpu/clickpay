@@ -26,7 +26,13 @@ export function CTASection() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, contact, message, source: 'CTA form' }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: { error?: string } = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        if (!res.ok) throw new Error(c.error);
+      }
       if (!res.ok) {
         throw new Error(data.error || c.error);
       }
