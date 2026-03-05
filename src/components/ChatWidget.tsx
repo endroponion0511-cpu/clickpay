@@ -164,7 +164,7 @@ export function ChatWidget() {
           className="w-14 h-14 shrink-0 overflow-hidden rounded-full [clip-path:circle(50%)]"
           style={{
             filter: theme === 'dark' ? 'invert(1)' : 'none',
-            transform: 'scale(0.85)',
+            transform: 'scale(1.25)',
             contain: 'paint',
           }}
         >
