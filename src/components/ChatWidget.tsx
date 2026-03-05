@@ -150,27 +150,29 @@ export function ChatWidget() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-4 lg:bottom-8 z-40 w-16 h-16 rounded-full flex items-center justify-center transition-transform hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#B6FF2E] focus:ring-offset-2 overflow-hidden"
+        className="fixed bottom-24 right-4 lg:bottom-8 z-40 w-16 h-16 rounded-full flex items-center justify-center transition-transform hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#B6FF2E] focus:ring-offset-2 overflow-hidden isolate"
         style={{
           backgroundColor: theme === 'dark' ? '#1a1b24' : '#ffffff',
           border: '3px solid #B6FF2E',
           boxShadow: '0 4px 20px rgba(182, 255, 46, 0.4), 0 0 40px rgba(182, 255, 46, 0.15)',
           paddingBottom: 'env(safe-area-inset-bottom)',
+          contain: 'layout paint',
         }}
         aria-label="Open chat"
       >
         <div
-          className="w-14 h-14 shrink-0"
+          className="w-14 h-14 shrink-0 overflow-hidden rounded-full [clip-path:circle(50%)]"
           style={{
             filter: theme === 'dark' ? 'invert(1)' : 'none',
-            transform: 'scale(1.25)',
+            transform: 'scale(0.85)',
+            contain: 'paint',
           }}
         >
           {animationData && (
             <Lottie
               animationData={animationData}
               loop
-              style={{ width: '100%', height: '100%' }}
+              style={{ width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%' }}
             />
           )}
         </div>
