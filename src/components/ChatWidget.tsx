@@ -130,6 +130,13 @@ export function ChatWidget() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [isOpen]);
+
   const startChat = () => {
     const name = nameInput.trim();
     if (!name) return;
@@ -225,18 +232,22 @@ export function ChatWidget() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-end p-4 pb-24 lg:pb-8">
+        <div className="fixed inset-0 z-50 flex flex-col sm:flex-row sm:items-end sm:justify-end sm:p-4 sm:pb-8">
+          {/* Overlay: on mobile full-screen chat hides it; on desktop dims background */}
           <div
-            className="absolute inset-0 bg-black/40"
+            className="hidden sm:block absolute inset-0 bg-black/40"
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
           <div
-            className="relative w-full max-w-sm h-[480px] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+            className="relative w-full sm:max-w-sm h-full sm:h-[480px] sm:rounded-2xl sm:shadow-2xl overflow-hidden flex flex-col flex-1 sm:flex-initial"
             style={{
               backgroundColor: 'var(--bg-secondary)',
               border: '1px solid var(--border-color)',
+              paddingTop: 'env(safe-area-inset-top)',
+              paddingBottom: 'env(safe-area-inset-bottom)',
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             <div
               className="flex items-center justify-between p-4 border-b shrink-0"

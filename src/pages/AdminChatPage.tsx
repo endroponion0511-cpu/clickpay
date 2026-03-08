@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, UserPlus, CheckCircle, RotateCcw } from 'lucide-react';
+import { Send, UserPlus, CheckCircle, RotateCcw, ArrowLeft } from 'lucide-react';
 import { supabase, type ChatMessage } from '../lib/supabase';
 
 type SessionSummary = {
@@ -213,7 +213,10 @@ export function AdminChatPage() {
 
   if (!supabase) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <div
+        className="h-[100dvh] min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900"
+        style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
         <p className="text-gray-600 dark:text-gray-400">Supabase not configured</p>
       </div>
     );
@@ -221,7 +224,10 @@ export function AdminChatPage() {
 
   if (!authenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+      <div
+        className="h-[100dvh] min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4"
+        style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
         <div className="w-full max-w-xs">
           <h1 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Manager login</h1>
           <input
@@ -253,8 +259,21 @@ export function AdminChatPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-100 dark:bg-gray-900">
-      <div className="w-72 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-white dark:bg-gray-800">
+    <div
+      className="h-[100dvh] min-h-screen flex flex-col md:flex-row overflow-hidden bg-gray-100 dark:bg-gray-900"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
+      }}
+    >
+      {/* Sidebar: hidden on mobile when chat selected */}
+      <div
+        className={`w-full md:w-72 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-white dark:bg-gray-800 min-h-0 ${
+          selectedSession ? 'hidden md:flex' : 'flex'
+        }`}
+      >
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <h1 className="font-semibold text-gray-900 dark:text-white">Chats</h1>
           <button
@@ -298,7 +317,7 @@ export function AdminChatPage() {
             </div>
           )}
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {sessions.map((s) => (
             <button
               key={s.session_id}
@@ -327,14 +346,26 @@ export function AdminChatPage() {
           )}
         </div>
       </div>
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         {selectedSession ? (
           <>
-            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {closedIds.has(selectedSession) ? 'Closed' : 'Open'}
-              </span>
-              <div className="flex gap-2">
+            <div
+              className="flex items-center justify-between gap-2 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0"
+              style={{ minHeight: 44 }}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <button
+                  onClick={() => setSelectedSession(null)}
+                  className="md:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 shrink-0"
+                  aria-label="Back to chats"
+                >
+                  <ArrowLeft size={20} className="text-gray-600 dark:text-gray-400" />
+                </button>
+                <span className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                  {closedIds.has(selectedSession) ? 'Closed' : 'Open'}
+                </span>
+              </div>
+              <div className="flex gap-2 shrink-0">
                 {closedIds.has(selectedSession) ? (
                   <button
                     onClick={reopenChat}
@@ -356,7 +387,7 @@ export function AdminChatPage() {
                 )}
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
               {messages.map((m) => (
                 <div
                   key={m.id}
@@ -376,14 +407,17 @@ export function AdminChatPage() {
               ))}
               <div ref={messagesEndRef} />
             </div>
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+            <div
+              className="p-4 border-t border-gray-200 dark:border-gray-700 flex gap-2 shrink-0 bg-white dark:bg-gray-800"
+              style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+            >
               <input
                 type="text"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendReply()}
                 placeholder="Reply…"
-                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="flex-1 min-w-0 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
               <button
                 onClick={sendReply}
@@ -395,7 +429,7 @@ export function AdminChatPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500">
+          <div className="flex-1 hidden md:flex items-center justify-center text-gray-500">
             Select a conversation
           </div>
         )}
