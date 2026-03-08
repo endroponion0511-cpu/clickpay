@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { LocaleProvider, useLocale } from './contexts/LocaleContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
@@ -20,36 +21,43 @@ import { SupabaseDiagnostic } from './pages/SupabaseDiagnostic';
 function LandingPage() {
   const { t } = useLocale();
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-inter selection:bg-[#B6FF2E] selection:text-black">
-      <Header />
+    <>
+      <div className="min-h-screen w-full overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] font-inter selection:bg-[#B6FF2E] selection:text-black">
+        <Header />
 
-      <main>
-        <HeroSection />
-        <TrustSection />
-        <ServicesSection />
-        <DirectionsSection />
-        <CalculatorSection />
-        <HowItWorksSection />
-        <SecuritySection />
-        <FAQSection />
-        <CTASection />
-      </main>
+        <main>
+          <HeroSection />
+          <TrustSection />
+          <ServicesSection />
+          <DirectionsSection />
+          <CalculatorSection />
+          <HowItWorksSection />
+          <SecuritySection />
+          <FAQSection />
+          <CTASection />
+        </main>
 
-      <footer className="py-8 bg-[var(--bg-primary)] border-t border-[var(--border-color)] text-center text-[var(--text-muted)] text-sm pb-safe-footer lg:pb-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <p>&copy; {new Date().getFullYear()} ClickPay. {t.footer}</p>
-          <Link
-            to="/admin/chat"
-            className="mt-2 inline-block text-[#B6FF2E] hover:underline text-xs"
-          >
-            {t.footerStaff}
-          </Link>
-        </div>
-      </footer>
+        <footer className="py-8 bg-[var(--bg-primary)] border-t border-[var(--border-color)] text-center text-[var(--text-muted)] text-sm pb-safe-footer lg:pb-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <p>&copy; {new Date().getFullYear()} ClickPay. {t.footer}</p>
+            <Link
+              to="/admin/chat"
+              className="mt-2 inline-block text-[#B6FF2E] hover:underline text-xs"
+            >
+              {t.footerStaff}
+            </Link>
+          </div>
+        </footer>
+      </div>
 
-      <MobileMessengerBar />
-      <ChatWidget />
-    </div>
+      {createPortal(
+        <>
+          <MobileMessengerBar />
+          <ChatWidget />
+        </>,
+        document.body
+      )}
+    </>
   );
 }
 

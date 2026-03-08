@@ -35,7 +35,7 @@ export function Header() {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <span className="font-sora text-xl sm:text-2xl font-bold text-[var(--text-primary)] tracking-tight">
-              ClickPay<span className="text-[#B6FF2E]">.</span>
+              Click<span className="text-[#B6FF2E]">Pay</span>
             </span>
           </div>
 

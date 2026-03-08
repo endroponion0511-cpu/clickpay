@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, UserPlus } from 'lucide-react';
+import { Send, UserPlus, CheckCircle, RotateCcw } from 'lucide-react';
 import { supabase, type ChatMessage } from '../lib/supabase';
 
 type SessionSummary = {
@@ -9,6 +9,7 @@ type SessionSummary = {
   last_at: string;
   count: number;
   last_from_user?: boolean;
+  closed?: boolean;
 };
 
 export function AdminChatPage() {
@@ -26,6 +27,8 @@ export function AdminChatPage() {
   const [addNewPassword, setAddNewPassword] = useState('');
   const [addLabel, setAddLabel] = useState('');
   const [addStatus, setAddStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [closedIds, setClosedIds] = useState<Set<string>>(new Set());
+  const [closing, setClosing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const checkPassword = async () => {
@@ -51,10 +54,14 @@ export function AdminChatPage() {
 
   const loadSessions = async () => {
     if (!supabase) return;
-    const { data } = await supabase
+    const messagesRes = await supabase
       .from('chat_messages')
       .select('session_id, user_name, text, created_at, is_from_support')
       .order('created_at', { ascending: false });
+    const closedRes = await supabase.from('closed_chat_sessions').select('session_id');
+    const closedSet = new Set(((closedRes.error ? [] : closedRes.data) ?? []).map((r: { session_id: string }) => r.session_id));
+    setClosedIds(closedSet);
+    const data = messagesRes.data;
     if (!data) return;
     const bySession = new Map<string, { user_name: string | null; last: string; last_at: string; count: number; last_from_user?: boolean }>();
     for (const m of data as (ChatMessage & { is_from_support?: boolean })[]) {
@@ -73,9 +80,49 @@ export function AdminChatPage() {
     }
     setSessions(
       Array.from(bySession.entries())
-        .map(([session_id, v]) => ({ session_id, ...v }))
-        .sort((a, b) => new Date(b.last_at).getTime() - new Date(a.last_at).getTime())
+        .map(([session_id, v]) => ({ session_id, ...v, closed: closedSet.has(session_id) }))
+        .sort((a, b) => {
+          const aClosed = closedSet.has(a.session_id) ? 1 : 0;
+          const bClosed = closedSet.has(b.session_id) ? 1 : 0;
+          if (aClosed !== bClosed) return aClosed - bClosed;
+          return new Date(b.last_at).getTime() - new Date(a.last_at).getTime();
+        })
     );
+  };
+
+  const closeChat = async () => {
+    if (!supabase || !selectedSession || !password.trim() || closing) return;
+    setClosing(true);
+    try {
+      const { data, error } = await supabase.rpc('close_chat_session', { pwd: password.trim(), sid: selectedSession });
+      if (error) throw error;
+      if (data) {
+        setClosedIds((prev) => new Set([...prev, selectedSession]));
+        setSelectedSession(null);
+        loadSessions();
+      }
+    } finally {
+      setClosing(false);
+    }
+  };
+
+  const reopenChat = async () => {
+    if (!supabase || !selectedSession || !password.trim() || closing) return;
+    setClosing(true);
+    try {
+      const { data, error } = await supabase.rpc('reopen_chat_session', { pwd: password.trim(), sid: selectedSession });
+      if (error) throw error;
+      if (data) {
+        setClosedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(selectedSession);
+          return next;
+        });
+        loadSessions();
+      }
+    } finally {
+      setClosing(false);
+    }
   };
 
   useEffect(() => {
@@ -258,10 +305,15 @@ export function AdminChatPage() {
               onClick={() => setSelectedSession(s.session_id)}
               className={`w-full text-left p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${
                 selectedSession === s.session_id ? 'bg-[#B6FF2E]/20' : ''
-              } ${s.last_from_user ? 'border-l-4 border-l-[#B6FF2E]' : ''}`}
+              } ${s.last_from_user && !s.closed ? 'border-l-4 border-l-[#B6FF2E]' : ''} ${s.closed ? 'opacity-75' : ''}`}
             >
-              <p className="font-medium text-gray-900 dark:text-white truncate">
+              <p className="font-medium text-gray-900 dark:text-white truncate flex items-center gap-2">
                 {s.user_name || 'Anonymous'}
+                {s.closed && (
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400">
+                    Closed
+                  </span>
+                )}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{s.last_message}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
@@ -278,6 +330,32 @@ export function AdminChatPage() {
       <div className="flex-1 flex flex-col">
         {selectedSession ? (
           <>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {closedIds.has(selectedSession) ? 'Closed' : 'Open'}
+              </span>
+              <div className="flex gap-2">
+                {closedIds.has(selectedSession) ? (
+                  <button
+                    onClick={reopenChat}
+                    disabled={closing}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+                  >
+                    <RotateCcw size={14} />
+                    Reopen
+                  </button>
+                ) : (
+                  <button
+                    onClick={closeChat}
+                    disabled={closing}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 disabled:opacity-50"
+                  >
+                    <CheckCircle size={14} />
+                    Close chat
+                  </button>
+                )}
+              </div>
+            </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.map((m) => (
                 <div

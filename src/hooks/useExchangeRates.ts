@@ -31,6 +31,7 @@ export function useExchangeRates(): { rates: RateItem[]; loading: boolean; error
     usdThb: number;
     eurThb: number;
     rubThb: number;
+    thbRub: number;  // THB/RUB = сколько RUB за 1 THB
   } | null>(null);
   const [rates, setRates] = useState<RateItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,8 +50,9 @@ export function useExchangeRates(): { rates: RateItem[]; loading: boolean; error
       const eurThb = usdThb / eurUsd;
       const rubUsd = r.RUB ?? 77.85;
       const rubThb = usdThb / rubUsd;
+      const thbRub = rubUsd / usdThb;  // 1 THB = X RUB
 
-      setBaseRates({ usdThb, eurThb, rubThb });
+      setBaseRates({ usdThb, eurThb, rubThb, thbRub });
       setError(null);
     } catch (e) {
       setError('Не удалось загрузить курсы');
@@ -58,6 +60,7 @@ export function useExchangeRates(): { rates: RateItem[]; loading: boolean; error
         usdThb: 31.54,
         eurThb: 36.75,
         rubThb: 0.405,
+        thbRub: 2.47,
       });
     } finally {
       setLoading(false);
@@ -74,13 +77,13 @@ export function useExchangeRates(): { rates: RateItem[]; loading: boolean; error
     const updateRates = () => {
       const u1 = addVariance(baseRates.usdThb);
       const u2 = addVariance(baseRates.eurThb);
-      const u3 = addVariance(baseRates.rubThb);
+      const u3 = addVariance(baseRates.thbRub);  // THB/RUB
       const u4 = addVariance(baseRates.usdThb, 0.005); // USDT ближе к USD
 
       setRates([
         { pair: 'USD / THB', symbol: '$', rate: u1.value.toFixed(2), change: `${u1.change >= 0 ? '+' : ''}${u1.change.toFixed(2)}%`, up: u1.change >= 0 },
         { pair: 'EUR / THB', symbol: '€', rate: u2.value.toFixed(2), change: `${u2.change >= 0 ? '+' : ''}${u2.change.toFixed(2)}%`, up: u2.change >= 0 },
-        { pair: 'RUB / THB', symbol: '₽', rate: u3.value.toFixed(4), change: `${u3.change >= 0 ? '+' : ''}${u3.change.toFixed(2)}%`, up: u3.change >= 0 },
+        { pair: 'THB / RUB', symbol: '฿', rate: u3.value.toFixed(2), change: `${u3.change >= 0 ? '+' : ''}${u3.change.toFixed(2)}%`, up: u3.change >= 0 },
         { pair: 'USDT / THB', symbol: '₮', rate: u4.value.toFixed(2), change: `${u4.change >= 0 ? '+' : ''}${u4.change.toFixed(2)}%`, up: u4.change >= 0 },
       ]);
     };
