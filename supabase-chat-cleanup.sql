@@ -14,6 +14,7 @@ declare
   deleted_messages int := 0;
   deleted_closed int := 0;
   deleted_abandoned int := 0;
+  deleted_rows int;
   old_closed_sessions uuid[];
   abandoned_sessions uuid[];
 begin
@@ -54,7 +55,8 @@ begin
 
   if abandoned_sessions is not null then
     delete from chat_messages where session_id = any(abandoned_sessions);
-    get diagnostics deleted_messages = deleted_messages + row_count;
+    get diagnostics deleted_rows = row_count;
+    deleted_messages := deleted_messages + deleted_rows;
     deleted_abandoned := array_length(abandoned_sessions, 1);
   end if;
 
