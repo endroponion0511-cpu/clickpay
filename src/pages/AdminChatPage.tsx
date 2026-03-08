@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, UserPlus, CheckCircle, RotateCcw, ArrowLeft } from 'lucide-react';
+import { Send, UserPlus, CheckCircle, RotateCcw, ArrowLeft, Trash2 } from 'lucide-react';
 import { supabase, type ChatMessage } from '../lib/supabase';
 
 type SessionSummary = {
@@ -29,6 +29,8 @@ export function AdminChatPage() {
   const [addStatus, setAddStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [closedIds, setClosedIds] = useState<Set<string>>(new Set());
   const [closing, setClosing] = useState(false);
+  const [cleaning, setCleaning] = useState(false);
+  const [cleanResult, setCleanResult] = useState<{ ok: boolean; deleted_messages?: number; deleted_closed_sessions?: number; deleted_abandoned_sessions?: number; error?: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const checkPassword = async () => {
@@ -167,6 +169,22 @@ export function AdminChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const cleanupHistory = async () => {
+    if (!supabase || !password.trim() || cleaning) return;
+    setCleaning(true);
+    setCleanResult(null);
+    try {
+      const { data, error } = await supabase.rpc('cleanup_chat_history', { pwd: password.trim() });
+      if (error) throw error;
+      setCleanResult(data as typeof cleanResult);
+      if (data?.ok) loadSessions();
+    } catch (e) {
+      setCleanResult({ ok: false, error: e instanceof Error ? e.message : 'Error' });
+    } finally {
+      setCleaning(false);
+    }
+  };
+
   const addManager = async () => {
     if (!supabase || !addMyPassword.trim() || !addNewPassword.trim()) return;
     setAddStatus('idle');
@@ -276,13 +294,30 @@ export function AdminChatPage() {
       >
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <h1 className="font-semibold text-gray-900 dark:text-white">Chats</h1>
-          <button
-            onClick={() => setShowAddManager(!showAddManager)}
-            className="mt-2 flex items-center gap-2 text-sm text-[#B6FF2E] hover:underline"
-          >
-            <UserPlus size={16} />
-            Add manager
-          </button>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              onClick={() => setShowAddManager(!showAddManager)}
+              className="flex items-center gap-2 text-sm text-[#B6FF2E] hover:underline"
+            >
+              <UserPlus size={16} />
+              Add manager
+            </button>
+            <button
+              onClick={cleanupHistory}
+              disabled={cleaning || !password.trim()}
+              className="flex items-center gap-2 text-sm text-amber-500 hover:text-amber-400 hover:underline disabled:opacity-50"
+            >
+              <Trash2 size={16} />
+              {cleaning ? 'Cleaning…' : 'Clean history'}
+            </button>
+          </div>
+          {cleanResult && (
+            <p className={`mt-2 text-xs ${cleanResult.ok ? 'text-green-600' : 'text-red-500'}`}>
+              {cleanResult.ok
+                ? `Cleaned: ${cleanResult.deleted_messages ?? 0} messages, ${(cleanResult.deleted_closed_sessions ?? 0) + (cleanResult.deleted_abandoned_sessions ?? 0)} sessions`
+                : cleanResult.error}
+            </p>
+          )}
           {showAddManager && (
             <div className="mt-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-700 space-y-2">
               <input
