@@ -32,6 +32,9 @@ export function ChatWidget() {
   const { theme } = useTheme();
   const { t } = useLocale();
 
+  const isEmailMetaMessage = (m: ChatMessage) =>
+    !m.is_from_support && typeof m.text === 'string' && m.text.startsWith('Email:');
+
 
   useEffect(() => {
     fetch('/chat-globe.json')
@@ -89,7 +92,8 @@ export function ChatWidget() {
           .select('*')
           .eq('session_id', sessionId)
           .order('created_at', { ascending: true });
-        setMessages((data as ChatMessage[]) ?? []);
+        const safe = ((data as ChatMessage[]) ?? []).filter((m) => !isEmailMetaMessage(m));
+        setMessages(safe);
       } catch {
         setSupabaseUnreachable(true);
       }
@@ -130,7 +134,10 @@ export function ChatWidget() {
         .select('*')
         .eq('session_id', sessionId)
         .order('created_at', { ascending: true })
-        .then(({ data }) => setMessages((data as ChatMessage[]) ?? []));
+        .then(({ data }) => {
+          const safe = ((data as ChatMessage[]) ?? []).filter((m) => !isEmailMetaMessage(m));
+          setMessages(safe);
+        });
     }
   }, [isOpen, sessionId]);
 
@@ -166,19 +173,6 @@ export function ChatWidget() {
     }
     localStorage.setItem(NAME_KEY, name);
     localStorage.setItem(EMAIL_KEY, email);
-
-    if (supabase && sid) {
-      try {
-        await supabase.from('chat_messages').insert({
-          session_id: sid,
-          user_name: name,
-          text: `Email: ${email}`,
-          is_from_support: false,
-        });
-      } catch {
-        // ignore
-      }
-    }
   };
 
   const sendMessage = async () => {
@@ -202,7 +196,13 @@ export function ChatWidget() {
         text,
         is_from_support: false,
       });
-      const hasSupportReply = messages.some((m) => m.is_from_support);
+      const { data: supportMsgs } = await supabase
+        .from('chat_messages')
+        .select('id')
+        .eq('session_id', sessionId)
+        .eq('is_from_support', true)
+        .limit(1);
+      const hasSupportReply = (supportMsgs ?? []).length > 0;
       if (!hasSupportReply) {
         const autoReplyText = t.chat.autoReply.replace('{name}', userName || '');
         await supabase.from('chat_messages').insert({
