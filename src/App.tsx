@@ -17,6 +17,7 @@ import { MobileMessengerBar } from './components/MobileMessengerBar';
 import { ChatWidget } from './components/ChatWidget';
 import { AdminChatPage } from './pages/AdminChatPage';
 import { SupabaseDiagnostic } from './pages/SupabaseDiagnostic';
+import { CursorTrail } from './components/CursorTrail';
 
 function LandingPage() {
   const { t } = useLocale();
@@ -52,6 +53,7 @@ function LandingPage() {
 
       {createPortal(
         <>
+          <CursorTrail />
           <MobileMessengerBar />
           <ChatWidget />
         </>,

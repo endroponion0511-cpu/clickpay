@@ -108,6 +108,13 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'JetBrains Mono', monospace;
 }
 
+.cursor-trail-dot {
+  background: radial-gradient(circle at center, rgba(182, 255, 46, 0.9), rgba(182, 255, 46, 0));
+  pointer-events: none;
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  transform: translate3d(0, 0, 0);
+}
+
 /* Mobile: safe area for notched phones (iPhone X+, etc.) */
 .pb-safe {
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
