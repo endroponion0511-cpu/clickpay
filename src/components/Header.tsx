@@ -3,6 +3,7 @@ import { Menu, X, Globe, Sun, Moon } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useLocale } from '../contexts/LocaleContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { TrueFocus } from './TrueFocus';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -30,14 +31,22 @@ export function Header() {
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerBg}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <div
-            className="flex-shrink-0 flex items-center cursor-pointer"
+          <button
+            type="button"
+            className="flex-shrink-0 flex items-center cursor-pointer bg-transparent border-none p-0 m-0"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <span className="font-sora text-xl sm:text-2xl font-bold text-[var(--text-primary)] tracking-tight">
-              Click<span className="text-[#B6FF2E]">Pay</span>
-            </span>
-          </div>
+            <TrueFocus
+              sentence="Click Pay"
+              separator=" "
+              manualMode={false}
+              blurAmount={4}
+              borderColor="#B6FF2E"
+              glowColor="rgba(182, 255, 46, 0.65)"
+              animationDuration={0.45}
+              pauseBetweenAnimations={0.7}
+            />
+          </button>
 
           <nav className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (

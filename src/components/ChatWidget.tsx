@@ -7,6 +7,7 @@ import { supabase, type ChatMessage } from '../lib/supabase';
 
 const SESSION_KEY = 'clickpay-chat-session';
 const NAME_KEY = 'clickpay-chat-name';
+const EMAIL_KEY = 'clickpay-chat-email';
 
 function generateSessionId() {
   return crypto.randomUUID();
@@ -18,6 +19,8 @@ export function ChatWidget() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [userName, setUserName] = useState('');
   const [nameInput, setNameInput] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [emailInput, setEmailInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
@@ -41,10 +44,15 @@ export function ChatWidget() {
     if (typeof window === 'undefined') return;
     const stored = localStorage.getItem(SESSION_KEY);
     const storedName = localStorage.getItem(NAME_KEY);
+    const storedEmail = localStorage.getItem(EMAIL_KEY);
     if (stored) setSessionId(stored);
     if (storedName) {
       setUserName(storedName);
       setNameInput(storedName);
+    }
+    if (storedEmail) {
+      setUserEmail(storedEmail);
+      setEmailInput(storedEmail);
     }
   }, []);
 
@@ -137,10 +145,19 @@ export function ChatWidget() {
     }
   }, [isOpen]);
 
-  const startChat = () => {
+  const startChat = async () => {
     const name = nameInput.trim();
-    if (!name) return;
+    const email = emailInput.trim();
+    if (!name || !email) return;
+
+    const isGmail = /^[^@\s]+@gmail\.com$/i.test(email);
+    if (!isGmail) {
+      alert('Введите Gmail-адрес вида example@gmail.com');
+      return;
+    }
+
     setUserName(name);
+    setUserEmail(email);
     let sid = sessionId;
     if (!sid) {
       sid = generateSessionId();
@@ -148,6 +165,20 @@ export function ChatWidget() {
       localStorage.setItem(SESSION_KEY, sid);
     }
     localStorage.setItem(NAME_KEY, name);
+    localStorage.setItem(EMAIL_KEY, email);
+
+    if (supabase && sid) {
+      try {
+        await supabase.from('chat_messages').insert({
+          session_id: sid,
+          user_name: name,
+          text: `Email: ${email}`,
+          is_from_support: false,
+        });
+      } catch {
+        // ignore
+      }
+    }
   };
 
   const sendMessage = async () => {
@@ -294,23 +325,37 @@ export function ChatWidget() {
                 <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
                   {t.chat.typeName}
                 </p>
-                <input
-                  type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  placeholder={t.chat.namePlaceholder}
-                  className="w-full px-4 py-3 rounded-lg border mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#B6FF2E]"
-                  style={{
-                    backgroundColor: 'var(--bg-primary)',
-                    borderColor: 'var(--border-color)',
-                    color: 'var(--text-primary)',
-                  }}
-                  onKeyDown={(e) => e.key === 'Enter' && startChat()}
-                />
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    placeholder={t.chat.namePlaceholder}
+                    className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#B6FF2E]"
+                    style={{
+                      backgroundColor: 'var(--bg-primary)',
+                      borderColor: 'var(--border-color)',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="your@gmail.com"
+                    className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#B6FF2E]"
+                    style={{
+                      backgroundColor: 'var(--bg-primary)',
+                      borderColor: 'var(--border-color)',
+                      color: 'var(--text-primary)',
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && startChat()}
+                  />
+                </div>
                 <button
                   onClick={startChat}
-                  disabled={!nameInput.trim()}
-                  className="w-full py-3 px-4 rounded-lg font-medium transition-opacity disabled:opacity-50"
+                  disabled={!nameInput.trim() || !emailInput.trim()}
+                  className="mt-4 w-full py-3 px-4 rounded-lg font-medium transition-opacity disabled:opacity-50"
                   style={{ backgroundColor: '#B6FF2E', color: '#000' }}
                 >
                   {t.chat.start}
@@ -373,9 +418,12 @@ export function ChatWidget() {
                         onClick={() => {
                           localStorage.removeItem(SESSION_KEY);
                           localStorage.removeItem(NAME_KEY);
+                          localStorage.removeItem(EMAIL_KEY);
                           setSessionId(null);
                           setUserName('');
                           setNameInput('');
+                          setUserEmail('');
+                          setEmailInput('');
                           setMessages([]);
                           setChatClosed(false);
                           setHistoryExpanded(false);
