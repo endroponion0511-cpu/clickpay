@@ -8,6 +8,7 @@ import { supabase, type ChatMessage } from '../lib/supabase';
 const SESSION_KEY = 'clickpay-chat-session';
 const NAME_KEY = 'clickpay-chat-name';
 const EMAIL_KEY = 'clickpay-chat-email';
+const PHONE_KEY = 'clickpay-chat-phone';
 
 function generateSessionId() {
   return crypto.randomUUID();
@@ -21,6 +22,8 @@ export function ChatWidget() {
   const [nameInput, setNameInput] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [emailInput, setEmailInput] = useState('');
+  const [userPhone, setUserPhone] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
@@ -28,6 +31,11 @@ export function ChatWidget() {
   const [supabaseUnreachable, setSupabaseUnreachable] = useState(false);
   const [chatClosed, setChatClosed] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(false);
+  const [verificationStep, setVerificationStep] = useState<'contact' | 'code' | 'chat'>('contact');
+  const [codeInput, setCodeInput] = useState('');
+  const [codeSending, setCodeSending] = useState(false);
+  const [codeVerifying, setCodeVerifying] = useState(false);
+  const [codeError, setCodeError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const { t } = useLocale();
@@ -48,6 +56,7 @@ export function ChatWidget() {
     const stored = localStorage.getItem(SESSION_KEY);
     const storedName = localStorage.getItem(NAME_KEY);
     const storedEmail = localStorage.getItem(EMAIL_KEY);
+    const storedPhone = localStorage.getItem(PHONE_KEY);
     if (stored) setSessionId(stored);
     if (storedName) {
       setUserName(storedName);
@@ -56,6 +65,10 @@ export function ChatWidget() {
     if (storedEmail) {
       setUserEmail(storedEmail);
       setEmailInput(storedEmail);
+    }
+    if (storedPhone) {
+      setUserPhone(storedPhone);
+      setPhoneInput(storedPhone);
     }
   }, []);
 
@@ -152,27 +165,76 @@ export function ChatWidget() {
     }
   }, [isOpen]);
 
-  const startChat = async () => {
+  const requestCode = async () => {
     const name = nameInput.trim();
     const email = emailInput.trim();
-    if (!name || !email) return;
+    const phone = phoneInput.trim();
+    if (!name || !email || !phone) return;
 
-    const isGmail = /^[^@\s]+@gmail\.com$/i.test(email);
-    if (!isGmail) {
-      alert('Введите Gmail-адрес вида example@gmail.com');
+    // simple email shape check
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isEmail) {
+      alert('Введите корректный email');
       return;
     }
 
+    if (!supabase) return;
+
+    setCodeSending(true);
+    setCodeError('');
+    try {
+      const { error } = await supabase.rpc('request_chat_code', {
+        email,
+        name,
+        phone,
+      });
+      if (error) {
+        console.error(error);
+        setCodeError('Не удалось отправить код. Попробуйте позже.');
+        return;
+      }
+      setVerificationStep('code');
+    } catch (e) {
+      console.error(e);
+      setCodeError('Не удалось отправить код. Попробуйте позже.');
+    } finally {
+      setCodeSending(false);
+    }
+  };
+
+  const startChat = async () => {
+    const name = nameInput.trim();
+    const email = emailInput.trim();
+    const phone = phoneInput.trim();
+    if (!name || !email || !phone) return;
+
     setUserName(name);
     setUserEmail(email);
+    setUserPhone(phone);
     let sid = sessionId;
+    let createdNewSession = false;
     if (!sid) {
       sid = generateSessionId();
       setSessionId(sid);
       localStorage.setItem(SESSION_KEY, sid);
+      createdNewSession = true;
     }
     localStorage.setItem(NAME_KEY, name);
     localStorage.setItem(EMAIL_KEY, email);
+    localStorage.setItem(PHONE_KEY, phone);
+
+    if (createdNewSession && supabase && sid) {
+      try {
+        await supabase.from('chat_messages').insert({
+          session_id: sid,
+          user_name: name,
+          text: `Email: ${email}\nPhone: ${phone}`,
+          is_from_support: false,
+        });
+      } catch {
+        // ignore meta message errors
+      }
+    }
   };
 
   const sendMessage = async () => {
@@ -320,47 +382,127 @@ export function ChatWidget() {
                   {retrying ? t.chat.connecting : t.chat.retry}
                 </button>
               </div>
-            ) : !userName ? (
-              <div className="flex-1 p-4 flex flex-col">
-                <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
-                  {t.chat.typeName}
-                </p>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    placeholder={t.chat.namePlaceholder}
-                    className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#B6FF2E]"
-                    style={{
-                      backgroundColor: 'var(--bg-primary)',
-                      borderColor: 'var(--border-color)',
-                      color: 'var(--text-primary)',
-                    }}
-                  />
-                  <input
-                    type="email"
-                    value={emailInput}
-                    onChange={(e) => setEmailInput(e.target.value)}
-                    placeholder="your@gmail.com"
-                    className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#B6FF2E]"
-                    style={{
-                      backgroundColor: 'var(--bg-primary)',
-                      borderColor: 'var(--border-color)',
-                      color: 'var(--text-primary)',
-                    }}
-                    onKeyDown={(e) => e.key === 'Enter' && startChat()}
-                  />
+            ) : verificationStep !== 'chat' ? (
+              verificationStep === 'contact' ? (
+                <div className="flex-1 p-4 flex flex-col">
+                  <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
+                    {t.chat.typeName}
+                  </p>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      placeholder={t.chat.namePlaceholder}
+                      className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#B6FF2E]"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        borderColor: 'var(--border-color)',
+                        color: 'var(--text-primary)',
+                      }}
+                    />
+                    <input
+                      type="tel"
+                      value={phoneInput}
+                      onChange={(e) => setPhoneInput(e.target.value)}
+                      placeholder={t.chat.phonePlaceholder ?? 'Phone number'}
+                      className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#B6FF2E]"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        borderColor: 'var(--border-color)',
+                        color: 'var(--text-primary)',
+                      }}
+                    />
+                    <input
+                      type="email"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#B6FF2E]"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        borderColor: 'var(--border-color)',
+                        color: 'var(--text-primary)',
+                      }}
+                    />
+                  </div>
+                  {codeError && (
+                    <p className="mt-2 text-xs text-red-500">
+                      {codeError}
+                    </p>
+                  )}
+                  <button
+                    onClick={requestCode}
+                    disabled={
+                      !nameInput.trim() ||
+                      !emailInput.trim() ||
+                      !phoneInput.trim() ||
+                      codeSending
+                    }
+                    className="mt-4 w-full py-3 px-4 rounded-lg font-medium transition-opacity disabled:opacity-50"
+                    style={{ backgroundColor: '#B6FF2E', color: '#000' }}
+                  >
+                    {codeSending ? t.chat.connecting : t.chat.start}
+                  </button>
                 </div>
-                <button
-                  onClick={startChat}
-                  disabled={!nameInput.trim() || !emailInput.trim()}
-                  className="mt-4 w-full py-3 px-4 rounded-lg font-medium transition-opacity disabled:opacity-50"
-                  style={{ backgroundColor: '#B6FF2E', color: '#000' }}
-                >
-                  {t.chat.start}
-                </button>
-              </div>
+              ) : (
+                <div className="flex-1 p-4 flex flex-col">
+                  <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
+                    Введите код, который мы отправили на email
+                  </p>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={codeInput}
+                      onChange={(e) => setCodeInput(e.target.value)}
+                      placeholder="123456"
+                      className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#B6FF2E]"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        borderColor: 'var(--border-color)',
+                        color: 'var(--text-primary)',
+                      }}
+                    />
+                  </div>
+                  {codeError && (
+                    <p className="mt-2 text-xs text-red-500">
+                      {codeError}
+                    </p>
+                  )}
+                  <button
+                    onClick={async () => {
+                      const email = emailInput.trim();
+                      const code = codeInput.trim();
+                      if (!email || !code || !supabase) return;
+                      setCodeVerifying(true);
+                      setCodeError('');
+                      try {
+                        const { data, error } = await supabase.rpc('verify_chat_code', {
+                          email,
+                          code,
+                        });
+                        if (error || !data) {
+                          console.error(error);
+                          setCodeError('Неверный или просроченный код');
+                          return;
+                        }
+                        await startChat();
+                        setVerificationStep('chat');
+                      } catch (e) {
+                        console.error(e);
+                        setCodeError('Не удалось проверить код. Попробуйте ещё раз.');
+                      } finally {
+                        setCodeVerifying(false);
+                      }
+                    }}
+                    disabled={!codeInput.trim() || codeVerifying}
+                    className="mt-4 w-full py-3 px-4 rounded-lg font-medium transition-opacity disabled:opacity-50"
+                    style={{ backgroundColor: '#B6FF2E', color: '#000' }}
+                  >
+                    {codeVerifying ? t.chat.connecting : 'Подтвердить код'}
+                  </button>
+                </div>
+              )
             ) : (
               <>
                 {chatClosed ? (

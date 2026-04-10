@@ -1,26 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowUpRight, MessageCircle, Send, TrendingUp, TrendingDown, Activity, RefreshCw } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
+import { HeroCalculateModal } from './HeroCalculateModal';
 import { useExchangeRates } from '../hooks/useExchangeRates';
 import { useLocale } from '../contexts/LocaleContext';
 
 export function HeroSection() {
   const { rates, loading, error } = useExchangeRates();
   const { t } = useLocale();
+  const [calculateModalOpen, setCalculateModalOpen] = useState(false);
 
   return (
     <section className="relative pt-24 sm:pt-28 md:pt-36 lg:pt-40 pb-12 sm:pb-16 md:pb-24">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] sm:w-[800px] lg:w-[1000px] h-[300px] sm:h-[400px] lg:h-[500px] bg-[#B6FF2E]/5 rounded-full blur-[80px] sm:blur-[100px] lg:blur-[120px] -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center">
-          <div className="space-y-5 sm:space-y-8 order-2 lg:order-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-14 lg:gap-16 xl:gap-20 items-center">
+          <div className="order-2 lg:order-1 flex flex-col gap-7 sm:gap-9 lg:gap-10">
             <div className="flex flex-wrap gap-2 sm:gap-3">
               {t.hero.badges.map((badge) => (
                 <span
                   key={badge}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border shadow-sm"
+                  className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border shadow-sm"
                   style={{ backgroundColor: 'var(--badge-bg)', color: 'var(--badge-text)', borderColor: 'var(--badge-border)' }}
                 >
                   {badge}
@@ -28,20 +30,27 @@ export function HeroSection() {
               ))}
             </div>
 
-            <h1 className="font-sora text-2xl min-[375px]:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--text-primary)] leading-tight">
-              {t.hero.title}{' '}
-              <span className="text-[#B6FF2E]">{t.hero.titleHighlight}</span>
-            </h1>
+            <div className="flex flex-col gap-4 sm:gap-6">
+              <h1 className="font-sora text-2xl min-[375px]:text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-[var(--text-primary)] leading-[1.12] sm:leading-[1.1] tracking-[-0.02em]">
+                {t.hero.title}{' '}
+                <span className="text-[var(--text-primary)]">Click</span>
+                <span className="text-[#B6FF2E]">Pay</span>
+                <span className="text-[var(--text-primary)]">!</span>
+              </h1>
+              <p className="text-lg sm:text-xl md:text-2xl font-medium text-[#B6FF2E] max-w-2xl leading-relaxed">
+                {t.hero.lead}
+              </p>
+            </div>
 
-            <p className="text-base sm:text-lg text-[var(--text-muted)] max-w-xl leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-[var(--text-muted)] max-w-2xl leading-[1.65] sm:leading-[1.7]">
               {t.hero.subtitle}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-1 sm:pt-2">
               <Button
                 size="lg"
                 className="font-semibold w-full sm:w-auto justify-center"
-                onClick={() => document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => setCalculateModalOpen(true)}
               >
                 {t.hero.calculateBtn}
                 <ArrowUpRight className="ml-2 h-5 w-5" />
@@ -149,6 +158,8 @@ export function HeroSection() {
           </div>
         </div>
       </div>
+
+      <HeroCalculateModal open={calculateModalOpen} onClose={() => setCalculateModalOpen(false)} />
     </section>
   );
 }

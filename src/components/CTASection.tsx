@@ -4,8 +4,7 @@ import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Card } from './ui/Card';
 import { useLocale } from '../contexts/LocaleContext';
-
-const API_URL = '/api/send-to-telegram';
+import { submitTelegramApplication } from '../lib/submitTelegramApplication';
 
 export function CTASection() {
   const { t } = useLocale();
@@ -20,30 +19,19 @@ export function CTASection() {
     e.preventDefault();
     setStatus('loading');
     setErrorMsg('');
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, contact, message, source: 'CTA form' }),
-      });
-      const text = await res.text();
-      let data: { error?: string } = {};
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch {
-        if (!res.ok) throw new Error(c.error);
-      }
-      if (!res.ok) {
-        throw new Error(data.error || c.error);
-      }
-      setStatus('success');
-      setName('');
-      setContact('');
-      setMessage('');
-    } catch (err) {
+    const result = await submitTelegramApplication(
+      { name, contact, message, source: 'CTA form' },
+      c.error
+    );
+    if (!result.ok) {
       setStatus('error');
-      setErrorMsg(err instanceof Error ? err.message : c.error);
+      setErrorMsg(result.error);
+      return;
     }
+    setStatus('success');
+    setName('');
+    setContact('');
+    setMessage('');
   }
 
   return (

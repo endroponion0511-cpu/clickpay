@@ -40,6 +40,28 @@
   }
 }
 
+.focus-container--compact .focus-word {
+  font-size: 1.125rem;
+  letter-spacing: -0.025em;
+}
+
+@media (min-width: 640px) {
+  .focus-container--compact .focus-word {
+    font-size: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .focus-container--compact .focus-word {
+    font-size: 1.35rem;
+  }
+}
+
+.focus-container--compact .focus-frame .corner {
+  width: 8px;
+  height: 8px;
+}
+
 .focus-word.manual {
   cursor: pointer;
 }

@@ -8,7 +8,6 @@ import { HeroSection } from './components/HeroSection';
 import { TrustSection } from './components/TrustSection';
 import { ServicesSection } from './components/ServicesSection';
 import { DirectionsSection } from './components/DirectionsSection';
-import { CalculatorSection } from './components/CalculatorSection';
 import { HowItWorksSection } from './components/HowItWorksSection';
 import { SecuritySection } from './components/SecuritySection';
 import { FAQSection } from './components/FAQSection';
@@ -30,7 +29,6 @@ function LandingPage() {
           <TrustSection />
           <ServicesSection />
           <DirectionsSection />
-          <CalculatorSection />
           <HowItWorksSection />
           <SecuritySection />
           <FAQSection />

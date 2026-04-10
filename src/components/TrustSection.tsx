@@ -1,17 +1,31 @@
 import React from 'react';
-import { CheckCircle } from 'lucide-react';
-import { Card } from './ui/Card';
 import { useCountUp } from '../hooks/useCountUp';
 import { useLocale } from '../contexts/LocaleContext';
 
 function MetricItem({ value, label, suffix = '', prefix = '' }: { value: number; label: string; suffix?: string; prefix?: string }) {
   const { ref, count } = useCountUp(value, 2000);
   return (
-    <div ref={ref} className="text-center p-4 sm:p-6 border-r border-b sm:border-b-0 border-[var(--border-color)] last:border-r-0">
-      <div className="font-mono text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#B6FF2E] mb-1 sm:mb-2 tabular-nums">
-        {prefix}{count.toLocaleString()}{suffix}
+    <div className="trust-metric-card-wrap h-full min-h-0">
+      <div
+        ref={ref}
+        className="trust-metric-card group relative flex h-full flex-col items-center justify-center overflow-hidden rounded-[20px] sm:rounded-[22px] border border-[var(--border-color)]/70 bg-[var(--bg-secondary)]/55 px-3 py-7 sm:py-8 md:py-9 backdrop-blur-2xl transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5 hover:border-[var(--border-color)] hover:shadow-lg [box-shadow:0_8px_32px_rgba(0,0,0,0.18),0_1px_0_rgba(255,255,255,0.06)_inset,0_0_36px_rgba(182,255,46,0.035)_inset] [html[data-theme='light']_&]:bg-[var(--bg-secondary)]/85 [html[data-theme='light']_&]:shadow-[0_4px_24px_rgba(15,23,42,0.08),0_1px_0_rgba(255,255,255,0.9)_inset]"
+      >
+      <div className="pointer-events-none absolute inset-0 trust-metric-inner-base" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 trust-metric-breathe" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        <div className="trust-metric-sweep" />
       </div>
-      <div className="text-xs sm:text-sm md:text-base text-[var(--text-muted)] font-medium leading-tight">{label}</div>
+      <div className="relative z-10 flex flex-col items-center gap-1.5 sm:gap-2">
+        <div className="font-sora text-2xl font-semibold tracking-tight text-[#B6FF2E] tabular-nums sm:text-3xl md:text-4xl lg:text-[2.35rem]">
+          {prefix}
+          {count.toLocaleString()}
+          {suffix}
+        </div>
+        <div className="max-w-[11rem] text-center text-[0.8125rem] font-medium leading-snug text-[var(--text-muted)] sm:max-w-none sm:text-sm">
+          {label}
+        </div>
+      </div>
+    </div>
     </div>
   );
 }
@@ -21,36 +35,21 @@ export function TrustSection() {
   const m = t.trust.metrics;
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 bg-[var(--bg-primary)] border-y border-[var(--border-color)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10 sm:mb-16">
-          <h2 className="font-sora text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-3 sm:mb-4">
-            {t.trust.title} <span className="text-[#B6FF2E]">ClickPay</span>
+    <section className="border-y border-[var(--border-color)] bg-[var(--bg-primary)] py-12 sm:py-16 md:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-10 text-center sm:mb-14">
+          <h2 className="mb-3 font-sora text-2xl font-bold text-[var(--text-primary)] sm:mb-4 sm:text-3xl md:text-4xl">
+            {t.trust.title}{' '}
+            <span className="trust-headline-breathe inline-block text-[#B6FF2E]">ClickPay</span>
           </h2>
-          <p className="text-[var(--text-muted)] max-w-2xl mx-auto">{t.trust.subtitle}</p>
+          <p className="mx-auto max-w-2xl text-[var(--text-muted)]">{t.trust.subtitle}</p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 border border-[var(--border-color)] rounded-2xl bg-[var(--bg-secondary)] overflow-hidden mb-12 sm:mb-16">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricItem value={12500} label={m.transfers} suffix="+" />
           <MetricItem value={50} label={m.countries} suffix="+" />
           <MetricItem value={99} label={m.success} suffix="%" />
           <MetricItem value={15} label={m.avgTime} />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-          {t.trust.cards.map((item, index) => (
-            <Card key={index} hoverEffect className="group">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 mt-1">
-                  <CheckCircle className="h-6 w-6 text-[#B6FF2E] group-hover:scale-110 transition-transform" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">{item.title}</h3>
-                  <p className="text-[var(--text-muted)] text-sm leading-relaxed">{item.desc}</p>
-                </div>
-              </div>
-            </Card>
-          ))}
         </div>
       </div>
     </section>

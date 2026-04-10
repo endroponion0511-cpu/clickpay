@@ -4,25 +4,34 @@ export const translations = {
     nav: {
       services: 'Услуги',
       directions: 'Направления',
-      calculator: 'Калькулятор',
       howItWorks: 'Как это работает',
       faq: 'FAQ',
       adminChat: 'Личный кабинет',
+      logoHome: 'ClickPay — наверх страницы',
     },
     cta: 'Оставить заявку',
 
     // Hero
     hero: {
       badges: ['SWIFT переводы', 'Обмен валют', 'Крипто ↔ Фиат', '24/7 Поддержка'],
-      title: 'Трансграничные переводы SWIFT и обмен валют',
-      titleHighlight: 'по всему миру',
-      subtitle: 'Быстрые переводы в 50+ стран, обмен криптовалют, персональная поддержка 24/7. Фиксированный курс и полная прозрачность комиссий.',
+      title: 'Денежные переводы по всему миру с',
+      lead: 'Финансовые перестановки быстро и безопасно.',
+      subtitle:
+        'Быстрые переводы в 50+ стран. Персональная поддержка 24/7. Чтобы рассчитать перевод или задать вопрос. Жмите на кнопку ниже.',
       calculateBtn: 'Рассчитать перевод',
       status: 'Статус:',
       processedToday: 'Обработано сегодня',
       avgRate: 'Средний курс',
       ratesError: 'Не удалось загрузить курсы',
       loading: 'загрузка…',
+      calculateModal: {
+        title: 'Заявка на расчёт перевода',
+        lead:
+          'Заполните форму ниже — менеджер свяжется с вами, а копия заявки уйдёт в Telegram, чтобы ничего не потерять.',
+        telegramNote:
+          'В поле контакта укажите @username в Telegram или номер, привязанный к Telegram.',
+        close: 'Закрыть',
+      },
     },
 
     // Trust
@@ -35,11 +44,6 @@ export const translations = {
         success: 'Успешных транзакций',
         avgTime: 'Среднее время (мин)',
       },
-      cards: [
-        { title: 'Лицензированная деятельность', desc: 'Мы работаем в строгом соответствии с международными финансовыми регуляторами.' },
-        { title: 'Фиксированный курс', desc: 'Курс фиксируется в момент создания заявки и не меняется во время обработки.' },
-        { title: 'Прозрачные комиссии', desc: 'Комиссия сервиса — 1%. Никаких скрытых платежей. Вы видите точную сумму к получению до отправки.' },
-      ],
     },
 
     // Services
@@ -59,31 +63,35 @@ export const translations = {
     directions: {
       title: 'Направления переводов',
       subtitle: 'Мы работаем с банками и платежными системами по всему миру, обеспечивая лучшие маршруты для ваших средств.',
-      table: { region: 'Регион', countries: 'Страны', currencies: 'Валюты', status: 'Статус', time: 'Срок' },
-      active: 'Активно',
       clarify: 'Уточнить направление',
-      rows: [
-        { region: 'Юго-Восточная Азия', countries: 'Таиланд, Вьетнам, Индонезия', currencies: 'THB, VND, IDR', time: '1-2 дня' },
-        { region: 'Европа', countries: 'Германия, Франция, Испания', currencies: 'EUR, GBP, CHF', time: '1-3 дня' },
-        { region: 'СНГ', countries: 'Россия, Казахстан, Узбекистан', currencies: 'RUB, KZT, UZS', time: '1 день' },
-        { region: 'Ближний Восток', countries: 'ОАЭ, Турция, Израиль', currencies: 'AED, TRY, ILS', time: '2-3 дня' },
-        { region: 'Америка', countries: 'США, Канада', currencies: 'USD, CAD', time: '2-4 дня' },
+      mapLoadError: 'Не удалось загрузить карту. Обновите страницу или попробуйте позже.',
+      mapHint:
+        'Популярные направления — в плавающем блоке. Нажмите на страну на карте — кратко подскажем, как связаться с менеджером по этому направлению.',
+      floatingTitle: 'Актуальные направления',
+      floatingDestinations: [
+        'Таиланд — THB, 1–2 дня',
+        'ОАЭ — AED, SWIFT',
+        'Германия — EUR, надёжно',
+        'США — USD, крупные суммы',
+        'Великобритания — GBP',
+        'Сингапур — SGD',
+        'Турция — TRY',
+        'Казахстан — KZT',
+        'Вьетнам — VND',
+        'Индонезия — IDR',
+        'Канада — CAD',
+        'Польша — PLN',
+        'Испания — EUR',
+        'Франция — EUR',
+        'Швейцария — CHF',
       ],
-    },
-
-    // Calculator
-    calculator: {
-      title: 'Калькулятор перевода',
-      subtitle: 'Рассчитайте точную сумму получения с учетом актуального курса',
-      bank: 'Банковский перевод',
-      crypto: 'Криптовалюта',
-      send: 'Отправляете',
-      receive: 'Получаете',
-      currentRate: 'Текущий курс',
-      commission: 'Комиссия сервиса',
-      total: 'Итого к получению',
-      getExact: 'Получить точный расчёт',
-      ratesError: 'Не удалось загрузить курсы',
+      countryModalTitle: 'Направление: {country}',
+      countryModalBody:
+        'Свяжитесь с менеджером ClickPay — подберём маршрут, курс и сроки под этот коридор.',
+      countryModalCorridorsHint: 'Нажмите на строку — откроются действия. Ещё раз или крестик — свернуть.',
+      countryModalRowNote: 'Оставьте заявку — укажем условия по выбранному направлению.',
+      countryModalClose: 'Понятно',
+      countryModalCta: 'Оставить заявку',
     },
 
     // How it works
@@ -123,7 +131,10 @@ export const translations = {
       items: [
         { q: 'Какие документы нужны для перевода?', a: 'Для большинства переводов достаточно паспорта и реквизитов получателя. Для сумм свыше $10,000 может потребоваться подтверждение источника средств.' },
         { q: 'Сколько времени занимает перевод?', a: 'SWIFT переводы обрабатываются за 1-3 рабочих дня в зависимости от направления. Криптовалютные операции — от 15 минут до 1 часа.' },
-        { q: 'Какая комиссия за перевод?', a: 'Комиссия сервиса составляет 1% от суммы перевода. Точный расчёт вы получите до подтверждения операции в нашем калькуляторе.' },
+        {
+          q: 'Какая комиссия за перевод?',
+          a: 'Комиссия сервиса составляет 1% от суммы перевода. Точный расчёт вы получите от менеджера до подтверждения операции.',
+        },
         { q: 'Можно ли отменить перевод?', a: 'До момента обработки перевод можно отменить. После отправки средств отмена возможна только через процедуру возврата (recall) через банк-получатель, что может занять время.' },
         { q: 'Работаете ли вы с юридическими лицами?', a: 'Да, мы работаем как с физическими, так и с юридическими лицами. Для бизнес-клиентов доступны специальные условия, инвойсы и закрывающие документы.' },
       ],
@@ -179,24 +190,32 @@ export const translations = {
     nav: {
       services: 'Services',
       directions: 'Directions',
-      calculator: 'Calculator',
       howItWorks: 'How it works',
       faq: 'FAQ',
       adminChat: 'Personal office',
+      logoHome: 'ClickPay — scroll to top',
     },
     cta: 'Submit request',
 
     hero: {
       badges: ['SWIFT transfers', 'Currency exchange', 'Crypto ↔ Fiat', '24/7 Support'],
-      title: 'Cross-border SWIFT transfers and currency exchange',
-      titleHighlight: 'worldwide',
-      subtitle: 'Fast transfers to 50+ countries, cryptocurrency exchange, personal 24/7 support. Fixed rate and full fee transparency.',
+      title: 'Money transfers worldwide with',
+      lead: 'Financial transfers quickly and securely.',
+      subtitle:
+        'Fast transfers to 50+ countries. Personal 24/7 support. To calculate a transfer or ask a question. Use the button below.',
       calculateBtn: 'Calculate transfer',
       status: 'Status:',
       processedToday: 'Processed today',
       avgRate: 'Average rate',
       ratesError: 'Failed to load rates',
       loading: 'loading…',
+      calculateModal: {
+        title: 'Transfer quote request',
+        lead:
+          'Fill in the form below — a manager will reach out, and a copy goes to Telegram so nothing is missed.',
+        telegramNote: 'In the contact field, add your Telegram @username or a number linked to Telegram.',
+        close: 'Close',
+      },
     },
 
     trust: {
@@ -208,11 +227,6 @@ export const translations = {
         success: 'Successful transactions',
         avgTime: 'Average time (min)',
       },
-      cards: [
-        { title: 'Licensed activity', desc: 'We operate in strict compliance with international financial regulators.' },
-        { title: 'Fixed rate', desc: 'The rate is fixed when you submit your request and does not change during processing.' },
-        { title: 'Transparent fees', desc: 'Service fee — 1%. No hidden charges. You see the exact amount before sending.' },
-      ],
     },
 
     services: {
@@ -230,30 +244,35 @@ export const translations = {
     directions: {
       title: 'Transfer directions',
       subtitle: 'We work with banks and payment systems worldwide, providing the best routes for your funds.',
-      table: { region: 'Region', countries: 'Countries', currencies: 'Currencies', status: 'Status', time: 'Time' },
-      active: 'Active',
       clarify: 'Clarify direction',
-      rows: [
-        { region: 'Southeast Asia', countries: 'Thailand, Vietnam, Indonesia', currencies: 'THB, VND, IDR', time: '1-2 days' },
-        { region: 'Europe', countries: 'Germany, France, Spain', currencies: 'EUR, GBP, CHF', time: '1-3 days' },
-        { region: 'CIS', countries: 'Russia, Kazakhstan, Uzbekistan', currencies: 'RUB, KZT, UZS', time: '1 day' },
-        { region: 'Middle East', countries: 'UAE, Turkey, Israel', currencies: 'AED, TRY, ILS', time: '2-3 days' },
-        { region: 'Americas', countries: 'USA, Canada', currencies: 'USD, CAD', time: '2-4 days' },
+      mapLoadError: 'Could not load the map. Refresh the page or try again later.',
+      mapHint:
+        'Popular corridors are in the floating panel. Tap a country on the map for a short note on how to reach your manager for that route.',
+      floatingTitle: 'Live corridors',
+      floatingDestinations: [
+        'Thailand — THB, 1–2 days',
+        'UAE — AED, SWIFT',
+        'Germany — EUR, reliable',
+        'United States — USD, large sums',
+        'United Kingdom — GBP',
+        'Singapore — SGD',
+        'Turkey — TRY',
+        'Kazakhstan — KZT',
+        'Vietnam — VND',
+        'Indonesia — IDR',
+        'Canada — CAD',
+        'Poland — PLN',
+        'Spain — EUR',
+        'France — EUR',
+        'Switzerland — CHF',
       ],
-    },
-
-    calculator: {
-      title: 'Transfer calculator',
-      subtitle: 'Calculate the exact amount you will receive with the current exchange rate',
-      bank: 'Bank transfer',
-      crypto: 'Cryptocurrency',
-      send: 'You send',
-      receive: 'You receive',
-      currentRate: 'Current rate',
-      commission: 'Service fee',
-      total: 'Total to receive',
-      getExact: 'Get exact quote',
-      ratesError: 'Failed to load rates',
+      countryModalTitle: 'Corridor: {country}',
+      countryModalBody:
+        'Contact a ClickPay manager — we will match the route, rate, and timeline for this destination.',
+      countryModalCorridorsHint: 'Tap a row to expand actions. Tap again or use × to collapse.',
+      countryModalRowNote: 'Submit a request — we will confirm terms for the corridor you picked.',
+      countryModalClose: 'Got it',
+      countryModalCta: 'Request a quote',
     },
 
     howItWorks: {
@@ -290,7 +309,10 @@ export const translations = {
       items: [
         { q: 'What documents are needed for a transfer?', a: 'For most transfers, a passport and recipient details are sufficient. For amounts over $10,000, proof of source of funds may be required.' },
         { q: 'How long does a transfer take?', a: 'SWIFT transfers are processed within 1-3 business days depending on the direction. Cryptocurrency operations — from 15 minutes to 1 hour.' },
-        { q: 'What is the transfer fee?', a: 'The service fee is 1% of the transfer amount. You will receive an exact quote before confirming the operation in our calculator.' },
+        {
+          q: 'What is the transfer fee?',
+          a: 'The service fee is 1% of the transfer amount. You will receive an exact quote from our manager before confirming the operation.',
+        },
         { q: 'Can a transfer be cancelled?', a: 'A transfer can be cancelled before processing. After funds are sent, cancellation is only possible through a recall procedure via the receiving bank, which may take time.' },
         { q: 'Do you work with legal entities?', a: 'Yes, we work with both individuals and legal entities. Business clients have access to special terms, invoices, and closing documents.' },
       ],

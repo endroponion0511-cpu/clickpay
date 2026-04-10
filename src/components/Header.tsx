@@ -20,7 +20,6 @@ export function Header() {
   const navLinks = [
     { name: t.nav.services, href: '#services' },
     { name: t.nav.directions, href: '#directions' },
-    { name: t.nav.calculator, href: '#calculator' },
     { name: t.nav.howItWorks, href: '#how-it-works' },
     { name: t.nav.faq, href: '#faq' },
   ];
@@ -30,12 +29,23 @@ export function Header() {
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerBg}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+        <div className="grid grid-cols-[1fr_auto] items-center gap-2 sm:gap-3 md:grid-cols-3 md:gap-4">
           <button
             type="button"
-            className="flex-shrink-0 flex items-center cursor-pointer bg-transparent border-none p-0 m-0"
+            className="justify-self-start inline-flex w-fit min-w-0 items-center gap-2 sm:gap-2.5 cursor-pointer bg-transparent border-none p-0 m-0 text-left"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            aria-label={t.nav.logoHome}
           >
+            <span className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center sm:h-12 sm:w-12 md:h-14 md:w-14">
+              <img
+                src="/logo-navigation.png"
+                alt=""
+                width={56}
+                height={56}
+                decoding="async"
+                className="h-full w-full object-contain select-none pointer-events-none"
+              />
+            </span>
             <TrueFocus
               sentence="Click Pay"
               separator=" "
@@ -45,10 +55,11 @@ export function Header() {
               glowColor="rgba(182, 255, 46, 0.65)"
               animationDuration={0.45}
               pauseBetweenAnimations={0.7}
+              compact
             />
           </button>
 
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex md:justify-center md:justify-self-center items-center gap-x-8 whitespace-nowrap">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -64,7 +75,8 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="flex justify-end justify-self-end items-center gap-1 md:col-start-3 md:gap-2">
+            <div className="hidden md:flex items-center gap-2">
             <button
               onClick={() => setLocale(locale === 'ru' ? 'en' : 'ru')}
               className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[#B6FF2E] hover:bg-[#B6FF2E]/10 transition-colors"
@@ -87,7 +99,7 @@ export function Header() {
             >
               {t.cta}
             </Button>
-          </div>
+            </div>
 
           <div className="md:hidden flex items-center gap-1">
             <button
@@ -110,6 +122,7 @@ export function Header() {
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
+          </div>
           </div>
         </div>
       </div>

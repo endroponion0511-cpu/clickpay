@@ -67,10 +67,11 @@ export function AdminChatPage() {
     if (!data) return;
     const bySession = new Map<string, { user_name: string | null; last: string; last_at: string; count: number; last_from_user?: boolean }>();
     for (const m of data as (ChatMessage & { is_from_support?: boolean })[]) {
+      const isEmailMeta = !m.is_from_support && typeof m.text === 'string' && m.text.startsWith('Email:');
       if (!bySession.has(m.session_id)) {
         bySession.set(m.session_id, {
           user_name: !m.is_from_support ? (m.user_name ?? null) : null,
-          last: m.text,
+          last: isEmailMeta ? '' : m.text,
           last_at: m.created_at,
           count: 0,
           last_from_user: !m.is_from_support,
@@ -78,7 +79,14 @@ export function AdminChatPage() {
       }
       const s = bySession.get(m.session_id)!;
       s.count++;
-      if (!m.is_from_support && m.user_name) s.user_name = m.user_name;
+      if (!m.is_from_support && m.user_name) s.user_name = s.user_name || m.user_name;
+      if (!isEmailMeta) {
+        if (new Date(m.created_at).getTime() > new Date(s.last_at).getTime()) {
+          s.last = m.text;
+          s.last_at = m.created_at;
+          s.last_from_user = !m.is_from_support;
+        }
+      }
     }
     setSessions(
       Array.from(bySession.entries())
@@ -170,19 +178,19 @@ export function AdminChatPage() {
   }, [messages]);
 
   const cleanupHistory = async () => {
-    if (!supabase || !password.trim() || cleaning) return;
+    if (cleaning) return;
     setCleaning(true);
-    setCleanResult(null);
-    try {
-      const { data, error } = await supabase.rpc('cleanup_chat_history', { pwd: password.trim() });
-      if (error) throw error;
-      setCleanResult(data as typeof cleanResult);
-      if (data?.ok) loadSessions();
-    } catch (e) {
-      setCleanResult({ ok: false, error: e instanceof Error ? e.message : 'Error' });
-    } finally {
-      setCleaning(false);
-    }
+    // Очищаем только интерфейс: список диалогов и текущие сообщения
+    setSessions([]);
+    setSelectedSession(null);
+    setMessages([]);
+    setCleanResult({
+      ok: true,
+      deleted_messages: 0,
+      deleted_closed_sessions: 0,
+      deleted_abandoned_sessions: 0,
+    });
+    setTimeout(() => setCleaning(false), 300);
   };
 
   const addManager = async () => {
@@ -423,7 +431,9 @@ export function AdminChatPage() {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
-              {messages.map((m) => (
+              {messages
+                .filter((m) => !( !m.is_from_support && typeof m.text === 'string' && m.text.startsWith('Email:') ))
+                .map((m) => (
                 <div
                   key={m.id}
                   className={`flex ${m.is_from_support ? 'justify-end' : 'justify-start'}`}

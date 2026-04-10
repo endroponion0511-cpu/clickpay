@@ -11,6 +11,8 @@ type TrueFocusProps = {
   glowColor?: string;
   animationDuration?: number;
   pauseBetweenAnimations?: number;
+  /** Smaller type for use next to a wordmark / logo */
+  compact?: boolean;
 };
 
 export const TrueFocus = ({
@@ -22,6 +24,7 @@ export const TrueFocus = ({
   glowColor = 'rgba(182, 255, 46, 0.6)',
   animationDuration = 0.5,
   pauseBetweenAnimations = 1,
+  compact = false,
 }: TrueFocusProps) => {
   const words = sentence.split(separator);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -69,7 +72,10 @@ export const TrueFocus = ({
   };
 
   return (
-    <div className="focus-container" ref={containerRef}>
+    <div
+      className={`focus-container${compact ? ' focus-container--compact' : ''}`}
+      ref={containerRef}
+    >
       {words.map((word, index) => {
         const isActive = index === currentIndex;
         const isPayWord = word.toLowerCase() === 'pay';

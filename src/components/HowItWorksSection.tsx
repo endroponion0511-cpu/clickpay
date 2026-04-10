@@ -27,8 +27,11 @@ export function HowItWorksSection() {
               const Icon = icons[index];
               return (
                 <div key={index} className="relative flex flex-col items-center text-center group">
-                  <div className="w-24 h-24 rounded-full bg-[var(--bg-secondary)] border-2 border-[var(--border-color)] group-hover:border-[#B6FF2E] flex items-center justify-center mb-6 transition-colors duration-300 z-10">
-                    <Icon className="h-8 w-8 text-[var(--text-muted)] group-hover:text-[#B6FF2E] transition-colors" />
+                  <div
+                    className="how-step-circle w-24 h-24 rounded-full bg-[var(--bg-secondary)] border-2 border-[var(--border-color)] group-hover:border-[#B6FF2E] flex items-center justify-center mb-6 transition-colors duration-300 z-10"
+                    style={{ animationDelay: `${index * 0.4}s` }}
+                  >
+                    <Icon className="how-step-icon h-8 w-8 text-[var(--text-muted)] group-hover:text-[#B6FF2E] transition-colors" />
                     <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-[var(--bg-tertiary)] border border-[var(--border-color)] flex items-center justify-center text-sm font-mono font-bold text-[var(--text-primary)]">
                       {index + 1}
                     </div>
